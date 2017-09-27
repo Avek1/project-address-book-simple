@@ -1,0 +1,242 @@
+﻿@model AddressBook.Models.ViewModels.ItemViewModel<int>
+@{
+    ViewBag.Title = "Index";
+}
+
+<style>
+    .form-control {
+        max-width: 100%;
+    }
+</style>
+
+<h2 style="text-align: center">Address Book</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Input Form</div>
+            <div class="panel-body">
+                <form id="inputForm">
+                    <div class="form-group">
+                        <label for="first-name">First Name</label>
+                        <input type="text" class="form-control" id="first-name" name="FirstName" />
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name">Last Name</label>
+                        <input type="text" class="form-control" id="last-name" name="LastName" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="Email" />
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="text" class="form-control" id="phone" name="Phone" />
+                    </div>
+                    <div class="form-group">
+                        <label for="address-1">Address 1</label>
+                        <input type="text" class="form-control" id="address-1" name="Address1" />
+                    </div>
+                    <div class="form-group">
+                        <label for="address-2">Address 2</label>
+                        <input type="text" class="form-control" id="address-2" name="Address2" />
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" class="form-control" id="city" name="City" />
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" class="form-control" id="state" name="State" />
+                    </div>
+                    <div class="form-group">
+                        <label for="postal-code">Postal Code</label>
+                        <input type="text" class="form-control" id="postal-code" name="PostalCode" />
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <input type="text" class="form-control" id="country" name="Country" />
+                    </div>
+                    <button type="button" class="btn btn-default pull-right" id="panel-body__button-submit">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6" id="contact-list">
+
+    </div>
+</div>
+<!-- end row -->
+@*<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>*@
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+
+
+<script type="text/javascript">
+    var acme = acme || {};
+
+    var activeId = @Model.Item;
+
+    acme.startUp = function (){
+        //acme.getById();
+        acme.getAll();
+    };
+
+    acme.getAll = function (onSuccess, onError){
+        console.log("GET ALL function works!")
+        var url = "/api/contact/";
+        var settings = {
+            cache: false
+            , dataType: "json"
+            , success: acme.getAll.onSuccess
+            , error: acme.getAll.onError
+            , type: "GET"
+        };
+        $.ajax(url, settings);
+    }
+
+    acme.getAll.onSuccess = function (data) {
+        console.log("Get All successful!");
+        console.log(data);
+        acme.populateIndex();
+    }
+
+    acme.getAll.onError = function () {
+        console.log("Get All failed!");
+    }
+    
+    // load template
+    acme.loadTemplate = function(){
+        return $($("#contact-template").html());
+    }
+    // populate index
+    acme.populateIndex = function(data){
+        console.log("Populate Index function.");
+        $.each(data.item, function(key, data){
+            var template = acme.loadTemplate();
+            $("#id", template).text(data.id);
+            $("#contact-first-name", template).text(data.FirstName);
+            $("#contact-last-name", template).text(data.LastName);
+            $("#contact-email", template).text(data.Email);
+            $("#contact-phone", template).text(data.Phone);
+            $("#contact-address-1", template).text(data.Address1);
+            $("#contact-address-2", template).text(data.Address2);
+            $("#contact-city", template).text(data.City);
+            $("#contact-state", template).text(data.State);
+            $("#contact-postal-code", template).text(data.PostalCode);
+            $("#contact-country", template).text(data.Country);
+
+            $("#contact-list").append(template);
+
+        });
+
+    }
+    // get by id
+    acme.getById = function (activeId, onSuccess, onError) {
+        var url = "/api/contact/" + activeId;
+        var settings = {
+            cache: false
+           , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+            //, data: acme.activeId
+           , dataType: "json"
+           , success: acme.getById.onSuccess
+           , error: acme.getById.onError
+           , type: "GET"
+        };
+        $.ajax(url, settings);
+    }
+
+    acme.getById.onSuccess = function (data) {
+        console.log("Get By Id successful!");
+        console.log(data);
+    }
+
+    acme.getById.onError = function () {
+        console.log("Get By Id failed!");
+    }
+    // submit entry -   W O R K S
+    acme.submitEntry = function (data, onSuccess, onError) {
+        console.log("This is the submitEntry function.");
+        var FN = $("#first-name").val();
+        var LN = $("#last-name").val();
+        var Email = $("#email").val();
+        var Phone = $("#phone").val();
+        var Add1 = $("#address-1").val();
+        var Add2 = $("#address-2").val();
+        var City = $("#city").val();
+        var State = $("#state").val();
+        var Zip = $("#postal-code").val();
+        var Country = $("#country").val();
+        var myData =
+            "&FirstName=" + FN +
+            "&LastName=" + LN +
+            "&Email=" + Email +
+            "&Phone=" + Phone +
+            "&Address1=" + Add1 +
+            "&Address2=" + Add2 +
+            "&City=" + City +
+            "&State=" + State +
+            "&PostalCode=" + Zip +
+            "&Country=" + Country;
+        //var myData = $("#inputForm").text($("form").serialize());
+        var url = "/api/contact"
+        var settings = {
+            cache: false
+           , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+            //, data: myData
+           , data: JSON.stringify(myData)
+           , dataType: "json"
+           , success: acme.submitEntry.onSuccess
+           , error: acme.submitEntry.onError
+           , type: "POST"
+        };
+
+        $.ajax(url, settings);
+    }
+
+    acme.submitEntry.onSuccess = function () {
+        console.log("Entry submitted sucessfully!");
+        acme.clearForm();
+    }
+
+    acme.submitEntry.onError = function (data) {
+        console.log("Entry failed to submit!");
+        console.log(data);
+    }
+    // clear form
+    acme.clearForm = function () {
+        console.log("Clear form function.");
+    }
+    // update entry
+   
+    // delete entry
+
+    $(document).ready(function () {
+        console.log("Lur!");
+        acme.startUp();
+        $("#panel-body__button-submit").on("click", acme.submitEntry);
+
+    });
+
+</script>
+
+<script type="text/html" id="contact-template">
+    <div class="panel panel-primary" id="contact-panel">
+        <div class="panel-heading">User contact:</div>
+        <div class="panel-body">
+            <p class="hidden" id="id">Id</p>
+            <p>First Name: <span id="contact-first-name"></span></p>
+            <p>Last Name: <span id="contact-last-name"></span></p>
+            <p>Email: <span id="contact-email"></span></p>
+            <p>Phone #: <span id="contact-phone"></span></p>
+            <p>Address 1: <span id="contact-address-1"></span></p>
+            <p>Address 2: <span id="contact-address-2"></span></p>
+            <p>City: <span id="contact-city"></span></p>
+            <p>State: <span id="contact-state"></span></p>
+            <p>Postal Code: <span id="contact-postal-code"></span></p>
+            <p>Country: <span id="contact-country"></span></p>
+            <button type="button" class="btn btn-default pull-right" id="button-delete">Delete</button>
+            <button type="button" class="btn btn-default pull-right" id="button-edit">Edit</button>
+        </div>
+    </div>
+</script>
