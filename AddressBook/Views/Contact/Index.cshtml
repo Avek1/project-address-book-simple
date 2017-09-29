@@ -109,12 +109,12 @@
     acme.loadTemplate = function(){
         return $($("#contact-template").html());
     }
-    // populate index
+    // populate index - W O R K S
     acme.populateIndex = function(data){
         console.log("Populate Index function.");
         $.each(data.Item, function(key, data){
             var template = acme.loadTemplate();
-            $("#id", template).text(data.id);
+            $("#id", template).text(data.Id);
             $("#contact-first-name", template).text(data.FirstName);
             $("#contact-last-name", template).text(data.LastName);
             $("#contact-email", template).text(data.Email);
@@ -224,7 +224,8 @@
     <div class="panel panel-primary" id="contact-panel">
         <div class="panel-heading">User contact:</div>
         <div class="panel-body">
-            <p class="hidden" id="id">Id</p>
+            @*<p class="hidden" id="id">Id</p>*@
+            <p class="hidden" >Id<span id="id"></span></p>
             <p>First Name: <span id="contact-first-name"></span></p>
             <p>Last Name: <span id="contact-last-name"></span></p>
             <p>Email: <span id="contact-email"></span></p>
