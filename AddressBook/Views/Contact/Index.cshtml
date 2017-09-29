@@ -98,7 +98,7 @@
     acme.getAll.onSuccess = function (data) {
         console.log("Get All successful!");
         console.log(data);
-        acme.populateIndex();
+        acme.populateIndex(data);
     }
 
     acme.getAll.onError = function () {
@@ -112,7 +112,7 @@
     // populate index
     acme.populateIndex = function(data){
         console.log("Populate Index function.");
-        $.each(data.item, function(key, data){
+        $.each(data.Item, function(key, data){
             var template = acme.loadTemplate();
             $("#id", template).text(data.id);
             $("#contact-first-name", template).text(data.FirstName);
