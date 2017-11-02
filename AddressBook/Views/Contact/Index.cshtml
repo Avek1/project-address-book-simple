@@ -4,12 +4,21 @@
 }
 
 <style>
+    body {
+        padding-top: 70px;
+    }
+
     .form-control {
         max-width: 100%;
     }
+
+    #contact-list {
+        height: 900px;
+        overflow: scroll;
+    }
 </style>
 
-<h2 style="text-align: center">Address Book</h2>
+@*<h2 style="text-align: center">Address Book</h2>*@
 
 <div class="row">
     <div class="col-md-6">
@@ -17,6 +26,12 @@
             <div class="panel-heading">Input Form</div>
             <div class="panel-body">
                 <form id="inputForm">
+                    <div class="form-group">
+                        <p class="editId">
+                            <b>ID: </b>
+                            <span id="infoId"></span>
+                        </p>
+                    </div>
                     <div class="form-group">
                         <label for="first-name">First Name</label>
                         <input type="text" class="form-control" id="first-name" name="FirstName" />
@@ -58,6 +73,8 @@
                         <input type="text" class="form-control" id="country" name="Country" />
                     </div>
                     <button type="button" class="btn btn-default pull-right" id="panel-body__button-submit">Submit</button>
+                    <button type="button" class="btn btn-default pull-right hidden" id="panel-body__button-update">Update</button>
+
                 </form>
             </div>
         </div>
@@ -67,177 +84,351 @@
     </div>
 </div>
 <!-- end row -->
-@*<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>*@
-<script src="~/Scripts/jquery-1.10.2.min.js"></script>
 
+@section Scripts {
+    <script type="text/javascript">
+        var acme = acme || {};
 
+        //var activeId = @Model.Item;  // what the hell does this do?  do i need it?
 
-<script type="text/javascript">
-    var acme = acme || {};
-
-    var activeId = @Model.Item;
-
-    acme.startUp = function (){
-        //acme.getById();
-        acme.getAll();
-    };
-
-    acme.getAll = function (onSuccess, onError){
-        console.log("GET ALL function works!")
-        var url = "/api/contact/";
-        var settings = {
-            cache: false
-            , dataType: "json"
-            , success: acme.getAll.onSuccess
-            , error: acme.getAll.onError
-            , type: "GET"
+        acme.startUp = function () {
+            acme.getAll();
+            acme.initializeValidation();
         };
-        $.ajax(url, settings);
-    }
 
-    acme.getAll.onSuccess = function (data) {
-        console.log("Get All successful!");
-        console.log(data);
-        acme.populateIndex(data);
-    }
+        acme.getAll = function (onSuccess, onError) {
+            console.log("GET ALL function works!")
+            var url = "/api/contact/";
+            var settings = {
+                cache: false
+                , dataType: "json"
+                , success: acme.getAll.onSuccess
+                , error: acme.getAll.onError
+                , type: "GET"
+            };
+            $.ajax(url, settings);
+        }
 
-    acme.getAll.onError = function () {
-        console.log("Get All failed!");
-    }
-    
-    // load template
-    acme.loadTemplate = function(){
-        return $($("#contact-template").html());
-    }
-    // populate index - W O R K S
-    acme.populateIndex = function(data){
-        console.log("Populate Index function.");
-        $.each(data.Item, function(key, data){
-            var template = acme.loadTemplate();
-            $("#id", template).text(data.Id);
-            $("#contact-first-name", template).text(data.FirstName);
-            $("#contact-last-name", template).text(data.LastName);
-            $("#contact-email", template).text(data.Email);
-            $("#contact-phone", template).text(data.Phone);
-            $("#contact-address-1", template).text(data.Address1);
-            $("#contact-address-2", template).text(data.Address2);
-            $("#contact-city", template).text(data.City);
-            $("#contact-state", template).text(data.State);
-            $("#contact-postal-code", template).text(data.PostalCode);
-            $("#contact-country", template).text(data.Country);
+        acme.getAll.onSuccess = function (data) {
+            console.log("Get All successful!");
+            console.log(data);
+            acme.populateIndex(data);
+        }
 
-            $("#contact-list").append(template);
+        acme.getAll.onError = function () {
+            console.log("Get All failed!");
+        }
 
+        // load template
+        acme.loadTemplate = function () {
+            return $($("#contact-template").html());
+        }
+        // populate index - W O R K S
+        acme.populateIndex = function (data) {
+            console.log("Populate Index function.");
+            $.each(data.Item, function (key, data) {
+                var template = acme.loadTemplate();
+                $("#contact-id", template).text(data.Id);
+                $("#contact-first-name", template).text(data.FirstName);
+                $("#contact-last-name", template).text(data.LastName);
+                $("#contact-email", template).text(data.Email);
+                $("#contact-phone", template).text(data.Phone);
+                $("#contact-address-1", template).text(data.Address1);
+                $("#contact-address-2", template).text(data.Address2);
+                $("#contact-city", template).text(data.City);
+                $("#contact-state", template).text(data.State);
+                $("#contact-postal-code", template).text(data.PostalCode);
+                $("#contact-country", template).text(data.Country);
+                $("#contact-list").append(template);
+            });
+        }
+
+        acme.initializeValidation = function () {
+            jQuery.validator.setDefaults({
+                debug: true
+            });
+            // sets rules
+            $("#inputForm").validate({
+                rules: {
+                    "FirstName": {
+                        required: true,
+                        minlength: 2,
+                        maxlength: 25
+                    },
+                    "LastName": {
+                        required: true,
+                        minlength: 2,
+                        maxlength: 25
+                    },
+                    "Email": {
+                        required: true,
+                        email: true,
+                        maxlength: 25
+                    },
+                    "Phone": {
+                        required: true,
+                        phoneUS: true,
+                    },
+                    "Address1": {
+                        required: true,
+                        minlength: 2,
+                        maxlength: 25
+                    },
+                    "Address2": {
+                        required: false,
+                        minlength: 1,
+                        maxlength: 25
+                    },
+                    "City": {
+                        required: true,
+                        minlength: 2,
+                        maxlength: 25
+                    },
+                    "State": {
+                        required: true,
+                        minlength: 2,
+                        maxlength: 25
+                    },
+                    "Country": {
+                        required: true,
+                        minlength: 2,
+                        maxlength: 25
+                    },
+                },
+                messages: {}
+            });
+            // error messages
+        }
+
+
+
+        // get id // i can probably fold this into the getById function but, i won't...for now.
+        acme.getId = function () {
+            var parentId = $(this).siblings().children("#contact-id").text();
+            console.log("get by id function.  Value: " + parentId);
+            acme.getById(parentId);
+        }
+        // get by id
+        acme.getById = function (activeId, onSuccess, onError) {
+            var url = "/api/contact/" + activeId;
+            var settings = {
+                cache: false
+               , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+               , dataType: "json"
+               , success: acme.getById.onSuccess
+               , error: acme.getById.onError
+               , type: "GET"
+            };
+            $.ajax(url, settings);
+        }
+        // recalls entry data to input form
+        acme.getById.onSuccess = function (data) {
+            console.log("Get By Id successful!");
+            console.log(data);
+            $("#infoId").text(data.Item.Id);            // .text() works on non-input elements.  will not work input elements.
+            $("#first-name").val(data.Item.FirstName);  // .val() works on input elements.
+            $("#last-name").val(data.Item.LastName);
+            $("#email").val(data.Item.Email);
+            $("#phone").val(data.Item.Phone);
+            $("#address-1").val(data.Item.Address1);
+            $("#address-2").val(data.Item.Address2);
+            $("#city").val(data.Item.City);
+            $("#state").val(data.Item.State);
+            $("#postal-code").val(data.Item.PostalCode);
+            $("#country").val(data.Item.Country);
+            $("#panel-body__button-update").removeClass("hidden");
+            $("#panel-body__button-submit").addClass("hidden");
+        }
+
+        acme.getById.onError = function () {
+            console.log("Get By Id failed!");
+        }
+        // submit entry -   W O R K S
+        acme.submitEntry = function (data, onSuccess, onError) {
+            console.log("This is the submitEntry function.");
+            var FN = $("#first-name").val();
+            var LN = $("#last-name").val();
+            var Email = $("#email").val();
+            var Phone = $("#phone").val();
+            var Add1 = $("#address-1").val();
+            var Add2 = $("#address-2").val();
+            var City = $("#city").val();
+            var State = $("#state").val();
+            var Zip = $("#postal-code").val();
+            var Country = $("#country").val();
+            var myData =
+                "&FirstName=" + FN +
+                "&LastName=" + LN +
+                "&Email=" + Email +
+                "&Phone=" + Phone +
+                "&Address1=" + Add1 +
+                "&Address2=" + Add2 +
+                "&City=" + City +
+                "&State=" + State +
+                "&PostalCode=" + Zip +
+                "&Country=" + Country;
+            var url = "/api/contact"
+            var settings = {
+                cache: false
+               , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+               , data: JSON.stringify(myData)
+               , dataType: "json"
+               , success: acme.submitEntry.onSuccess
+               , error: acme.submitEntry.onError
+               , type: "POST"
+            };
+
+            $.ajax(url, settings);
+        }
+
+        acme.submitEntry.onSuccess = function () {
+            console.log("Entry submitted sucessfully!");
+            //acme.clearForm();
+            location.reload();
+
+        }
+
+        acme.submitEntry.onError = function (data) {
+            console.log("Entry failed to submit!");
+            console.log(data);
+        }
+        // clear form
+        acme.clearForm = function () {
+            console.log("Clear form function.");
+            $('#inputForm')[0].reset();
+        }
+
+        // update entry
+        acme.updateEntry = function (id, data, onSuccess, onError) {
+            console.log("update function");
+            var ID = $("#infoId").text();
+            var FN = $("#first-name").val();
+            var LN = $("#last-name").val();
+            var Email = $("#email").val();
+            var Phone = $("#phone").val();
+            var Add1 = $("#address-1").val();
+            var Add2 = $("#address-2").val();
+            var City = $("#city").val();
+            var State = $("#state").val();
+            var Zip = $("#postal-code").val();
+            var Country = $("#country").val();
+            var myData =
+                "&Id=" + ID +
+                "&FirstName=" + FN +
+                "&LastName=" + LN +
+                "&Email=" + Email +
+                "&Phone=" + Phone +
+                "&Address1=" + Add1 +
+                "&Address2=" + Add2 +
+                "&City=" + City +
+                "&State=" + State +
+                "&PostalCode=" + Zip +
+                "&Country=" + Country;
+            var url = "/api/contact/" + ID;
+            var settings = {
+                cache: false
+               , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+               , data: JSON.stringify(myData)
+               , dataType: "json"
+               , success: acme.updateEntry.onSuccess
+               , error: acme.updateEntry.onError
+               , type: "PUT"
+            };
+            $.ajax(url, settings);
+        }
+
+        acme.updateEntry.onSuccess = function () {
+            console.log("Entry updated successfully!");
+            location.reload();
+        }
+
+        acme.updateEntry.onError = function () {
+            console.log("Entry update failed!");
+
+        }
+
+        // delete entry
+        acme.delete = function (id, onSuccess, onError) {
+            var parentId = $(this).siblings().children("#contact-id").text();
+            console.log("delete function.  Value: " + parentId);
+            var url = "/api/contact/" + parentId;
+            var settings = {
+                cache: false
+               , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+               , dataType: "json"
+               , success: acme.delete.onSuccess
+               , error: acme.delete.onError
+               , type: "DELETE"
+            };
+
+            $.ajax(url, settings);
+        }
+
+        acme.delete.onSuccess = function () {
+            console.log("DELETED!!");
+            location.reload();
+
+        }
+
+        acme.delete.onError = function () {
+            console.log("NOT deleted!  WOMP womp...");
+        }
+
+        $(document).ready(function () {
+            console.log("Lur!");
+            acme.startUp();
+            $("#panel-body__button-submit").on("click", acme.submitEntry);  // THIS WORKS
+            $("#contact-list").on("click", "button#button-edit", acme.getId);   // THIS WORKS
+            $("#panel-body__button-update").on("click", acme.updateEntry);  // THIS WORKS
+            $("#contact-list").on("click", "button#button-delete", acme.delete);  // THIS WORKS
         });
 
-    }
-    // get by id
-    acme.getById = function (activeId, onSuccess, onError) {
-        var url = "/api/contact/" + activeId;
-        var settings = {
-            cache: false
-           , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
-            //, data: acme.activeId
-           , dataType: "json"
-           , success: acme.getById.onSuccess
-           , error: acme.getById.onError
-           , type: "GET"
-        };
-        $.ajax(url, settings);
-    }
-
-    acme.getById.onSuccess = function (data) {
-        console.log("Get By Id successful!");
-        console.log(data);
-    }
-
-    acme.getById.onError = function () {
-        console.log("Get By Id failed!");
-    }
-    // submit entry -   W O R K S
-    acme.submitEntry = function (data, onSuccess, onError) {
-        console.log("This is the submitEntry function.");
-        var FN = $("#first-name").val();
-        var LN = $("#last-name").val();
-        var Email = $("#email").val();
-        var Phone = $("#phone").val();
-        var Add1 = $("#address-1").val();
-        var Add2 = $("#address-2").val();
-        var City = $("#city").val();
-        var State = $("#state").val();
-        var Zip = $("#postal-code").val();
-        var Country = $("#country").val();
-        var myData =
-            "&FirstName=" + FN +
-            "&LastName=" + LN +
-            "&Email=" + Email +
-            "&Phone=" + Phone +
-            "&Address1=" + Add1 +
-            "&Address2=" + Add2 +
-            "&City=" + City +
-            "&State=" + State +
-            "&PostalCode=" + Zip +
-            "&Country=" + Country;
-        //var myData = $("#inputForm").text($("form").serialize());
-        var url = "/api/contact"
-        var settings = {
-            cache: false
-           , contentType: "application/x-www-form-urlencoded; charset=UTF-8"
-            //, data: myData
-           , data: JSON.stringify(myData)
-           , dataType: "json"
-           , success: acme.submitEntry.onSuccess
-           , error: acme.submitEntry.onError
-           , type: "POST"
-        };
-
-        $.ajax(url, settings);
-    }
-
-    acme.submitEntry.onSuccess = function () {
-        console.log("Entry submitted sucessfully!");
-        acme.clearForm();
-    }
-
-    acme.submitEntry.onError = function (data) {
-        console.log("Entry failed to submit!");
-        console.log(data);
-    }
-    // clear form
-    acme.clearForm = function () {
-        console.log("Clear form function.");
-    }
-    // update entry
-   
-    // delete entry
-
-    $(document).ready(function () {
-        console.log("Lur!");
-        acme.startUp();
-        $("#panel-body__button-submit").on("click", acme.submitEntry);
-
-    });
-
-</script>
-
-<script type="text/html" id="contact-template">
-    <div class="panel panel-primary" id="contact-panel">
-        <div class="panel-heading">User contact:</div>
-        <div class="panel-body">
-            @*<p class="hidden" id="id">Id</p>*@
-            <p class="hidden" >Id<span id="id"></span></p>
-            <p>First Name: <span id="contact-first-name"></span></p>
-            <p>Last Name: <span id="contact-last-name"></span></p>
-            <p>Email: <span id="contact-email"></span></p>
-            <p>Phone #: <span id="contact-phone"></span></p>
-            <p>Address 1: <span id="contact-address-1"></span></p>
-            <p>Address 2: <span id="contact-address-2"></span></p>
-            <p>City: <span id="contact-city"></span></p>
-            <p>State: <span id="contact-state"></span></p>
-            <p>Postal Code: <span id="contact-postal-code"></span></p>
-            <p>Country: <span id="contact-country"></span></p>
-            <button type="button" class="btn btn-default pull-right" id="button-delete">Delete</button>
-            <button type="button" class="btn btn-default pull-right" id="button-edit">Edit</button>
+    </script>
+    <script type="text/html" id="contact-template">
+        <div class="panel panel-primary" id="contact-panel">
+            <div class="panel-heading">User contact:</div>
+            <div class="panel-body">
+                <p class="">Id: <span id="contact-id" class="contact-id"></span></p>
+                <p>First Name: <span id="contact-first-name"></span></p>
+                <p>Last Name: <span id="contact-last-name"></span></p>
+                <p>Email: <span id="contact-email"></span></p>
+                <p>Phone #: <span id="contact-phone"></span></p>
+                <p>Address 1: <span id="contact-address-1"></span></p>
+                <p>Address 2: <span id="contact-address-2"></span></p>
+                <p>City: <span id="contact-city"></span></p>
+                <p>State: <span id="contact-state"></span></p>
+                <p>Postal Code: <span id="contact-postal-code"></span></p>
+                <p>Country: <span id="contact-country"></span></p>
+                <button type="button" class="btn btn-default pull-right" id="button-delete">Delete</button>
+                <button type="button" class="btn btn-default pull-right" id="button-edit">Edit</button>
+            </div>
         </div>
-    </div>
-</script>
+    </script>
+
+}
+
+
+
+<!--
+    NOTES
+
+    POST works
+    PUT works
+    GET BY ID (edit) works
+    GET ALL (startup) works
+    DELETE works
+
+    1.  Independantly scrollable index column.  > DONE
+    2.  BUG > UPDATE function introduces a double-quotaion mark at the end of the Country value.  FIX!!
+    3.  Introduce data validation. Validator not working. > DONE >  Solution:  I had to include the validator script inthe layout.cshtml
+    3.  Separate ajax functions.
+    4.  Make pretty.
+    5.  Add a column for a Google Map.
+
+    Clean up code
+    Test
+
+    Refactor code - implement serialization.
+    Refactor code - swap jQuery with AngularJs in a new view.
+
+    -->
