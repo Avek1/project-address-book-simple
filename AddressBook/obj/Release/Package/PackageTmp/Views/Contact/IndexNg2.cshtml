@@ -1,0 +1,205 @@
+﻿@model AddressBook.Models.ViewModels.ItemViewModel<int>
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .form-control {
+        max-width: 100%;
+    }
+</style>
+
+<div ng-app="contactApp" class="container">
+    <div ng-controller="contactController as cc">
+        <h2 style="text-align: center">Address Book - Angular Version</h2>
+        <p>{{cc.myMessage}}</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Input Form</div>
+                    <div class="panel-body">
+                        <form id="inputForm">
+                            <div class="form-group">
+                                <label for="first-name">First Name</label>
+                                <input type="text" class="form-control" id="first-name" name="FirstName" />
+                            </div>
+                            <div class="form-group">
+                                <label for="last-name">Last Name</label>
+                                <input type="text" class="form-control" id="last-name" name="LastName" />
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="Email" />
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="text" class="form-control" id="phone" name="Phone" />
+                            </div>
+                            <div class="form-group">
+                                <label for="address-1">Address 1</label>
+                                <input type="text" class="form-control" id="address-1" name="Address1" />
+                            </div>
+                            <div class="form-group">
+                                <label for="address-2">Address 2</label>
+                                <input type="text" class="form-control" id="address-2" name="Address2" />
+                            </div>
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                <input type="text" class="form-control" id="city" name="City" />
+                            </div>
+                            <div class="form-group">
+                                <label for="state">State</label>
+                                <input type="text" class="form-control" id="state" name="State" />
+                            </div>
+                            <div class="form-group">
+                                <label for="postal-code">Postal Code</label>
+                                <input type="text" class="form-control" id="postal-code" name="PostalCode" />
+                            </div>
+                            <div class="form-group">
+                                <label for="country">Country</label>
+                                <input type="text" class="form-control" id="country" name="Country" />
+                            </div>
+                            <button type="button" class="btn btn-default pull-right" id="panel-body__button-submit">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6" id="contact-list">
+
+            </div>
+        </div>
+        <!-- end row -->
+    </div>
+</div>
+
+
+@*<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>*@
+@*<script src="~/Scripts/jquery-1.10.2.min.js"></script>*@
+
+
+@section scripts{
+
+    @*<script src="~/Scripts/acme.services.contact.js"></script>*@
+
+    <script type="text/javascript">
+        // mainApp module registration
+        (function () {
+            alert('its ANGULAR');
+
+            angular.module('contactApp', []);
+
+            angular.module('contactApp')
+                .controller('contactController', ContactController);
+        })();
+
+        // CONTACT SERVICE (INTERNAL)
+        (function () {
+            "use strict";
+            angular.module('contactApp')
+            .factory('contactService', contactService);
+
+            contactService.$inject = ['$http', '$q'];
+
+            function contactService($http, $q) {
+                return {
+                    getAll: _getAll
+                }
+            };
+
+            function _getAll() {
+                var settings = {
+                    url: '/api/contact',
+                    method: 'GET',
+                    //headers: {},
+                    cache: false,
+                    responseType: "json",
+                };
+                return $http(settings)
+                    .then(_getAllComplete, _getAllFailed);
+            }
+
+            function _getAllComplete(response) {
+                // unwrap the data from the response
+                return response.data;
+            }
+
+            function _getAllFailed(error) {
+                var msg = 'Failed to retrieve blogs';
+                if (error.data && error.data.description) {
+                    msg += '\n' + error.data.description;
+                }
+                error.data.description = msg;
+                return $q.reject(error);
+            }
+
+        })();
+
+        // CONTACT CONTROLLER
+        function ContactController(contactService) {
+            //
+            alert('its contact controller');
+
+            var vm = this;
+            vm.contactService = contactService;
+
+            vm.myMessage = "Angular is rendering on the page";
+            vm.items = [];
+            vm.item = null;
+
+            // guts
+            vm.$onInit = _init;
+
+            function _init() {
+                //vm.contactService.getAllContacts(_getAllContactsSuccess, getAllContactsError);
+                vm.contactService.getAll()
+                    .then(_getAllSuccess, _getAllError)
+            }
+
+            function _getAllSuccess(data) {
+                if (data && data.items) {
+                    vm.items = data.items;
+                }
+                vm.alertService.success("Retrieved all");
+            }
+
+            function _getAllError(error) {
+                if (error && error.message) {
+                    vm.alertService.error(error.message, "GetAll failed");
+                }
+                else {
+                    vm.alertService.error("Unable to retrieve data", "GetAll failed");
+                }
+            }
+
+
+        }
+
+    </script>
+
+    <script type="text/html" id="contact-template">
+        <div class="panel panel-primary" id="contact-panel">
+            <div class="panel-heading">User contact:</div>
+            <div class="panel-body">
+                <p class="hidden" id="id">Id</p>
+                <p>First Name: <span id="contact-first-name"></span></p>
+                <p>Last Name: <span id="contact-last-name"></span></p>
+                <p>Email: <span id="contact-email"></span></p>
+                <p>Phone #: <span id="contact-phone"></span></p>
+                <p>Address 1: <span id="contact-address-1"></span></p>
+                <p>Address 2: <span id="contact-address-2"></span></p>
+                <p>City: <span id="contact-city"></span></p>
+                <p>State: <span id="contact-state"></span></p>
+                <p>Postal Code: <span id="contact-postal-code"></span></p>
+                <p>Country: <span id="contact-country"></span></p>
+                <button type="button" class="btn btn-default pull-right" id="button-delete">Delete</button>
+                <button type="button" class="btn btn-default pull-right" id="button-edit">Edit</button>
+            </div>
+        </div>
+    </script>
+
+
+
+}
+
+
